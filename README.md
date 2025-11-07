@@ -57,6 +57,14 @@ docker compose down
 
 # Alles neu bauen
 docker compose up -d --build
+
+# Content-Feld im Dashboard ausblenden
+curl -X PATCH 'http://localhost:7700/indexes/files/settings' \
+  -H "Authorization: Bearer dein-master-key" \
+  -H 'Content-Type: application/json' \
+  --data-binary '{
+    "displayedAttributes": ["id", "filename", "path", "type", "preview"]
+  }'
 ```
 
 ## Troubleshooting

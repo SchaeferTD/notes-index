@@ -44,7 +44,7 @@ def create_index():
         response = requests.post(
             f"{MEILI_URL}/indexes",
             headers=HEADERS,
-            json={"uid": "files", "primaryKey": "id"},  # id statt path!
+            json={"uid": "files", "primaryKey": "id"},
             timeout=10
         )
         log(f"✅ Index erstellt: {response.status_code}")
@@ -81,10 +81,14 @@ def index_document(file_path):
                     content = content[:50000] + "\n... (gekürzt)"
                     log(f"⚠️  Inhalt gekürzt auf 50000 Zeichen")
                 
+                # Preview erstellen (erste 500 Zeichen)
+                preview = content[:500] + "..." if len(content) > 500 else content
+                
                 data = {
                     "id": path_to_id(file_path),
                     "path": file_path,
                     "filename": os.path.basename(file_path),
+                    "preview": preview,
                     "content": content,
                     "type": "markdown"
                 }
@@ -102,10 +106,15 @@ def index_document(file_path):
                     text = response.text
                     if len(text) > 50000:
                         text = text[:50000] + "\n... (gekürzt)"
+                    
+                    # Preview erstellen (erste 500 Zeichen)
+                    preview = text[:500] + "..." if len(text) > 500 else text
+                    
                     data = {
                         "id": path_to_id(file_path),
                         "path": file_path,
                         "filename": os.path.basename(file_path),
+                        "preview": preview,
                         "content": text,
                         "type": ext
                     }
@@ -129,12 +138,23 @@ def index_document(file_path):
                 ).decode("utf-8")
                 audio_data = json.loads(meta)[0]
                 
+                # Preview für Audio (Titel, Artist, Album)
+                preview_parts = []
+                if "Title" in audio_data:
+                    preview_parts.append(f"Title: {audio_data['Title']}")
+                if "Artist" in audio_data:
+                    preview_parts.append(f"Artist: {audio_data['Artist']}")
+                if "Album" in audio_data:
+                    preview_parts.append(f"Album: {audio_data['Album']}")
+                preview = " | ".join(preview_parts) if preview_parts else "Audio-Datei"
+                
                 data = {
                     "id": path_to_id(file_path),
                     "path": file_path,
                     "filename": os.path.basename(file_path),
+                    "preview": preview,
                     "type": "audio",
-                    **audio_data  # Merge audio metadata
+                    **audio_data
                 }
             except subprocess.TimeoutExpired:
                 log(f"❌ Timeout bei ExifTool für {file_path}")
