@@ -1,0 +1,34 @@
+services:
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    container_name: meilisearch
+    restart: unless-stopped
+    environment:
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
+      MEILI_ENV: development
+    volumes:
+      - ./meili_data:/meili_data
+    ports:
+      - "7700:7700"
+
+  tika:
+    image: apache/tika:latest
+    container_name: tika
+    restart: unless-stopped
+    ports:
+      - "9998:9998"
+
+  indexer:
+    build: ./scripts
+    container_name: indexer
+    restart: unless-stopped
+    environment:
+      MEILI_URL: "http://meilisearch:7700"
+      MEILI_API_KEY: ${MEILI_MASTER_KEY}
+      TIKA_URL: "http://tika:9998/tika"
+    volumes:
+      - ${MD_FILES}:/data/md_files
+      #- ${AUDIO_FILES}:/data/audio_files
+    depends_on:
+      - meilisearch
+      - tika
