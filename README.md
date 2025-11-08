@@ -46,17 +46,20 @@ Login mit deinem `MEILI_MASTER_KEY`.
 ## Nützliche Befehle
 
 ```bash
+# Services stoppen
+docker compose down
+
+# Daten löschen
+sudo rm -rf meili_data/*
+
+# Alles neu bauen
+docker compose up -d --build
+
 # Logs anzeigen
 docker compose logs -f indexer
 
 # Neu indexieren
 docker compose restart indexer
-
-# Services stoppen
-docker compose down
-
-# Alles neu bauen
-docker compose up -d --build
 
 # Content-Feld im Dashboard ausblenden
 curl -X PATCH 'http://localhost:7700/indexes/files/settings' \

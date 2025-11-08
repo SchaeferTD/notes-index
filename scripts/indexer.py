@@ -14,8 +14,8 @@ API_KEY = os.environ["MEILI_API_KEY"]
 TIKA_URL = os.environ["TIKA_URL"]
 HEADERS = {"Authorization": f"Bearer {API_KEY}"}
 
-# Maximale Dateigröße (in Bytes) - 10 MB
-MAX_FILE_SIZE = 10 * 1024 * 1024
+# Maximale Dateigröße (in Bytes) - 250 MB
+MAX_FILE_SIZE = 250 * 1024 * 1024
 
 # Ignorierte Ordner
 IGNORED_FOLDERS = {'.trash', '.stfolder', '.git', '.obsidian', 'node_modules', '__pycache__', 'Bibeltext', 'zzOrga'}

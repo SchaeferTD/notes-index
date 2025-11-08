@@ -28,7 +28,7 @@ services:
       TIKA_URL: "http://tika:9998/tika"
     volumes:
       - ${MD_FILES}:/data/md_files
-      #- ${AUDIO_FILES}:/data/audio_files
+      - ${AUDIO_FILES}:/data/audio_files
     depends_on:
       - meilisearch
       - tika
