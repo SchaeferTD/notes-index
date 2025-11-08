@@ -6,17 +6,22 @@ services:
     environment:
       MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
       MEILI_ENV: development
+      MEILI_HTTP_ADDR: 0.0.0.0:7700
     volumes:
       - ./meili_data:/meili_data
     ports:
-      - "7700:7700"
+      - "0.0.0.0:7700:7700"
+    networks:
+      - meilisearch-network
 
   tika:
     image: apache/tika:latest
     container_name: tika
     restart: unless-stopped
     ports:
-      - "9998:9998"
+      - "127.0.0.1:9998:9998"
+    networks:
+      - meilisearch-network
 
   indexer:
     build: ./scripts
@@ -32,3 +37,9 @@ services:
     depends_on:
       - meilisearch
       - tika
+    networks:
+      - meilisearch-network
+
+networks:
+  meilisearch-network:
+    driver: bridge
