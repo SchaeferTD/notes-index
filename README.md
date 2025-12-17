@@ -21,7 +21,7 @@ MD_FILES=/dein/erster/pfad
 AUDIO_FILES=/dein/zweiter/pfad
 ```
 
-Weitere Pfade müssen in der `.env` und in der `docker-compose.yml` eingefügt werden.
+Darüber hinausgehende Pfade müssen in der `.env` und in der `docker-compose.yml` ergänzt werden.
 
 ### 2. Starten
 
@@ -96,6 +96,7 @@ docker compose logs indexer
 notes-index/
 ├── docker-compose.yml
 ├── .env
+├── .env.example
 ├── README.md
 ├── scripts/
 │   ├── Dockerfile
