@@ -21,8 +21,6 @@ MD_FILES=/dein/erster/pfad
 AUDIO_FILES=/dein/zweiter/pfad
 ```
 
-Darüber hinausgehende Pfade müssen in der `.env` und in der `docker-compose.yml` ergänzt werden.
-
 ### 2. Starten
 
 ```bash
@@ -37,6 +35,16 @@ http://localhost:7700
 ```
 
 Login mit deinem `MEILI_MASTER_KEY`.
+
+## Weitere Pfade hinzufügen
+
+1. Pfad in der `.env` als neuen Eintrag hinzufügen
+2. Den Eintrag im Service `indexer` unter `volumes` eintragen:
+
+```yaml
+volumes:
+  - ${NEUER_PFAD}:/data/neuer_pfad  # Hier neue Pfade hinzufügen
+```
 
 ## Unterstützte Formate
 
