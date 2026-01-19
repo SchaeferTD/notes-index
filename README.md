@@ -69,6 +69,10 @@ docker compose logs -f indexer
 # Neu indexieren
 docker compose restart indexer
 
+# Meilisearch und Tika aktualisieren
+docker compose pull meilisearch tika
+docker compose up -d
+
 # Content-Feld im Dashboard ausblenden
 curl -X PATCH 'http://localhost:7700/indexes/files/settings' \
   -H "Authorization: Bearer dein-master-key" \
