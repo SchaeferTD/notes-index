@@ -13,11 +13,6 @@ services:
       - "0.0.0.0:7700:7700"
     networks:
       - meilisearch-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7700/health"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
 
   tika:
     image: apache/tika:latest
@@ -40,10 +35,8 @@ services:
       - ${MD_FILES}:/data/md_files
       - ${AUDIO_FILES}:/data/audio_files
     depends_on:
-      meilisearch:
-        condition: service_healthy
-      tika:
-        condition: service_started
+      - meilisearch
+      - tika
     networks:
       - meilisearch-network
 
