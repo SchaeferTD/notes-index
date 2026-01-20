@@ -1,6 +1,6 @@
 import time, json, requests, subprocess, os, traceback, hashlib
 from pathlib import Path
-from watchdog.observers import Observer
+from watchdog.observers.polling import PollingObserver
 from watchdog.events import FileSystemEventHandler
 from datetime import datetime
 
@@ -220,16 +220,81 @@ def index_existing_files(base_path="/data"):
     
     log(f"✅ Fertig! {file_count} Dateien verarbeitet, {skipped_count} übersprungen!")
 
+def delete_document(file_path):
+    """Löscht ein Dokument aus dem Index"""
+    doc_id = path_to_id(file_path)
+    try:
+        response = requests.delete(
+            f"{MEILI_URL}/indexes/files/documents/{doc_id}",
+            headers=HEADERS,
+            timeout=10
+        )
+        if response.status_code in [200, 202]:
+            log(f"🗑️  Aus Index entfernt: {file_path}")
+        else:
+            log(f"⚠️  Konnte nicht entfernen (evtl. nicht im Index): {file_path}")
+    except Exception as e:
+        log(f"❌ Fehler beim Löschen aus Index: {e}")
+
+def cleanup_deleted_files():
+    """Entfernt Dokumente aus dem Index, deren Dateien nicht mehr existieren"""
+    log("🧹 Starte Cleanup für gelöschte Dateien...")
+
+    deleted_count = 0
+    offset = 0
+    limit = 1000
+
+    while True:
+        try:
+            response = requests.get(
+                f"{MEILI_URL}/indexes/files/documents?limit={limit}&offset={offset}",
+                headers=HEADERS,
+                timeout=30
+            )
+
+            if response.status_code != 200:
+                log(f"❌ Fehler beim Abrufen der Dokumente: {response.status_code}")
+                break
+
+            data = response.json()
+            docs = data.get("results", [])
+
+            if not docs:
+                break
+
+            for doc in docs:
+                file_path = doc.get("path")
+                if file_path and not os.path.exists(file_path):
+                    delete_document(file_path)
+                    deleted_count += 1
+
+            offset += limit
+
+            # Prüfen ob es weitere Dokumente gibt
+            if len(docs) < limit:
+                break
+
+        except Exception as e:
+            log(f"❌ Fehler beim Cleanup: {e}")
+            break
+
+    log(f"🧹 Cleanup fertig! {deleted_count} verwaiste Einträge entfernt.")
+
 class Watcher(FileSystemEventHandler):
     def on_created(self, event):
         if not event.is_directory and not should_ignore_path(event.src_path):
             log(f"📄 Neue Datei erkannt: {event.src_path}")
             index_document(event.src_path)
-    
+
     def on_modified(self, event):
         if not event.is_directory and not should_ignore_path(event.src_path):
             log(f"📝 Datei geändert: {event.src_path}")
             index_document(event.src_path)
+
+    def on_deleted(self, event):
+        if not event.is_directory:
+            log(f"🗑️  Datei gelöscht: {event.src_path}")
+            delete_document(event.src_path)
 
 # Hauptprogramm
 if __name__ == "__main__":
@@ -241,11 +306,14 @@ if __name__ == "__main__":
         create_index()
         time.sleep(2)
         
-        # 2. Alle vorhandenen Dateien indexieren
+        # 2. Cleanup: Gelöschte Dateien aus Index entfernen
+        cleanup_deleted_files()
+
+        # 3. Alle vorhandenen Dateien indexieren
         index_existing_files("/data")
         
-        # 3. Watcher für neue Dateien starten
-        observer = Observer()
+        # 4. Watcher für neue Dateien starten
+        observer = PollingObserver(timeout=5)
         observer.schedule(Watcher(), path="/data", recursive=True)
         observer.start()
         
