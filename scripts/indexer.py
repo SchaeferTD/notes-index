@@ -320,12 +320,22 @@ if __name__ == "__main__":
         
         log("👀 Beobachte /data für neue Änderungen...")
         log("💓 Heartbeat wird alle 60 Sekunden ausgegeben...")
-        
+        log("🕐 Täglicher Cleanup um 05:00 Uhr")
+
         counter = 0
+        last_cleanup_date = None
+
         while True:
             time.sleep(60)
             counter += 1
             log(f"💓 Heartbeat #{counter} - Indexer läuft noch...")
+
+            # Täglicher Cleanup um 05:00 Uhr
+            now = datetime.now()
+            if now.hour == 5 and now.minute < 1 and last_cleanup_date != now.date():
+                log("🕐 Starte geplanten täglichen Cleanup...")
+                cleanup_deleted_files()
+                last_cleanup_date = now.date()
     
     except KeyboardInterrupt:
         log("🛑 Stoppe Indexer...")
