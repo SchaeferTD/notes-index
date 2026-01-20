@@ -17,9 +17,19 @@ Trage ein:
 
 ```bash
 MEILI_MASTER_KEY=dein-sicherer-key-hier
+MEILI_VERSION=v1.24.0
 MD_FILES=/dein/erster/pfad
 AUDIO_FILES=/dein/zweiter/pfad
+CLEANUP=false
 ```
+
+| Variable | Beschreibung |
+|----------|--------------|
+| `MEILI_MASTER_KEY` | API-Key für Meilisearch |
+| `MEILI_VERSION` | Meilisearch-Version (z.B. `v1.12.0`, default: `latest`) |
+| `MD_FILES` | Pfad zu Markdown/Dokumenten |
+| `AUDIO_FILES` | Pfad zu Audio-Dateien |
+| `CLEANUP` | `true` = beim Start verwaiste Index-Einträge entfernen |
 
 ### 2. Starten
 
@@ -45,6 +55,22 @@ Login mit deinem `MEILI_MASTER_KEY`.
 volumes:
   - ${NEUER_PFAD}:/data/neuer_pfad  # Hier neue Pfade hinzufügen
 ```
+
+## Cleanup: Verwaiste Index-Einträge entfernen
+
+Wenn Dateien gelöscht werden während der Indexer nicht läuft, bleiben verwaiste Einträge im Index zurück. Mit `CLEANUP=true` werden diese beim Start entfernt:
+
+```bash
+# In .env setzen:
+CLEANUP=true
+
+# Dann neu starten:
+docker compose up -d --build
+```
+
+Nach dem Cleanup `CLEANUP=false` wieder setzen (oder weglassen), damit nicht bei jedem Start der gesamte Index geprüft wird.
+
+**Hinweis:** Löschungen werden auch live erkannt, solange der Indexer läuft. Der Cleanup ist nur nötig, wenn Dateien gelöscht wurden während der Container gestoppt war.
 
 ## Unterstützte Formate
 

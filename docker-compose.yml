@@ -1,6 +1,6 @@
 services:
   meilisearch:
-    image: getmeili/meilisearch:latest
+    image: getmeili/meilisearch:${MEILI_VERSION:-latest}
     container_name: meilisearch
     restart: unless-stopped
     environment:
@@ -31,6 +31,7 @@ services:
       MEILI_URL: "http://meilisearch:7700"
       MEILI_API_KEY: ${MEILI_MASTER_KEY}
       TIKA_URL: "http://tika:9998/tika"
+      CLEANUP: ${CLEANUP:-false}
     volumes:
       - ${MD_FILES}:/data/md_files
       - ${AUDIO_FILES}:/data/audio_files

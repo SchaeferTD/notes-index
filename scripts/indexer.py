@@ -305,9 +305,10 @@ if __name__ == "__main__":
         # 1. Index erstellen
         create_index()
         time.sleep(2)
-        
-        # 2. Cleanup: Gelöschte Dateien aus Index entfernen
-        cleanup_deleted_files()
+
+        # 2. Optional: Cleanup für gelöschte Dateien (via CLEANUP=true in .env)
+        if os.environ.get("CLEANUP", "false").lower() == "true":
+            cleanup_deleted_files()
 
         # 3. Alle vorhandenen Dateien indexieren
         index_existing_files("/data")
