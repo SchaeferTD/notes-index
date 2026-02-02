@@ -13,10 +13,6 @@ services:
       - "0.0.0.0:7700:7700"
     networks:
       - meilisearch-network
-    deploy:
-      resources:
-        limits:
-          memory: 512M
 
   tika:
     image: apache/tika:latest
