@@ -38,13 +38,15 @@ docker compose up -d
 docker compose logs -f indexer
 ```
 
-### 3. Dashboard öffnen
+### 3. Such-UI öffnen
 
 ```
-http://localhost:7700
+http://localhost:8080
 ```
 
-Login mit deinem `MEILI_MASTER_KEY`.
+Beim ersten Aufruf wird nach dem API-Key gefragt (wird im Browser gespeichert).
+
+**Alternativ:** Meilisearch-Dashboard unter `http://localhost:7700` mit dem Master-Key.
 
 ## Weitere Pfade hinzufügen
 
@@ -76,6 +78,65 @@ Nach dem Cleanup `CLEANUP=false` wieder setzen (oder weglassen), damit nicht bei
 
 - **Dokumente**: PDF, DOCX, DOC, TXT, MD, ODT, RTF
 - **Audio**: MP3, WAV, FLAC, M4A (Metadaten via ExifTool)
+
+## Sicherheit
+
+Die Such-UI ist für lokale Nutzung konzipiert. Für den Produktiveinsatz:
+
+### Search-Only API-Key erstellen
+
+Statt des Master-Keys einen eingeschränkten Key verwenden:
+
+```bash
+curl -X POST 'http://localhost:7700/keys' \
+  -H 'Authorization: Bearer DEIN_MASTER_KEY' \
+  -H 'Content-Type: application/json' \
+  --data-raw '{
+    "description": "Search-only key for web UI",
+    "actions": ["search"],
+    "indexes": ["files"],
+    "expiresAt": null
+  }'
+```
+
+### Meilisearch nur lokal erreichbar machen
+
+In `docker-compose.yml` ändern:
+
+```yaml
+ports:
+  - "127.0.0.1:7700:7700"  # statt 0.0.0.0
+```
+
+## Performance & Ressourcen
+
+### Memory-Limit
+
+Meilisearch ist auf 512MB RAM begrenzt. Bei größeren Indizes anpassen:
+
+```yaml
+# docker-compose.yml
+meilisearch:
+  deploy:
+    resources:
+      limits:
+        memory: 1G  # oder 768M
+```
+
+### inotify Watch-Limit (Linux/Raspberry Pi)
+
+Bei vielen Dateien kann das inotify-Limit erreicht werden:
+
+```bash
+# Aktuelles Limit prüfen
+cat /proc/sys/fs/inotify/max_user_watches
+
+# Temporär erhöhen
+sudo sysctl fs.inotify.max_user_watches=65536
+
+# Permanent in /etc/sysctl.conf:
+# fs.inotify.max_user_watches=65536
+```
 
 ## Nützliche Befehle
 
@@ -139,6 +200,8 @@ notes-index/
 ├── scripts/
 │   ├── Dockerfile
 │   └── indexer.py
+├── web/
+│   └── index.html      # Such-UI
 └── meili_data/
 ```
 

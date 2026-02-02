@@ -1,6 +1,6 @@
 import time, json, requests, subprocess, os, traceback, hashlib
 from pathlib import Path
-from watchdog.observers.polling import PollingObserver
+from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from datetime import datetime
 
@@ -314,7 +314,7 @@ if __name__ == "__main__":
         index_existing_files("/data")
         
         # 4. Watcher für neue Dateien starten
-        observer = PollingObserver(timeout=5)
+        observer = Observer()
         observer.schedule(Watcher(), path="/data", recursive=True)
         observer.start()
         
