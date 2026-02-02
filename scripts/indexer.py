@@ -188,37 +188,66 @@ def index_document(file_path):
         log(f"❌ UNERWARTETER Fehler beim Indexieren von {file_path}: {e}")
         log(f"Traceback: {traceback.format_exc()}")
 
+def collect_files(base_path="/data"):
+    """Sammelt alle zu indexierenden Dateien"""
+    supported_extensions = {".md", ".doc", ".docx", ".pdf", ".txt", ".odt", ".rtf",
+                           ".mp3", ".wav", ".flac", ".m4a"}
+    files_to_index = []
+
+    for root, dirs, files in os.walk(base_path):
+        dirs[:] = [d for d in dirs if d not in IGNORED_FOLDERS and not d.startswith('.')]
+
+        for file in files:
+            if Path(file).suffix.lower() in supported_extensions:
+                file_path = os.path.join(root, file)
+                if not should_ignore_path(file_path):
+                    files_to_index.append(file_path)
+
+    return files_to_index
+
+def progress_bar(current, total, width=30):
+    """Erzeugt eine Fortschrittsanzeige"""
+    if total == 0:
+        return "[" + "=" * width + "] 100%"
+
+    percent = current / total
+    filled = int(width * percent)
+    bar = "=" * filled + "-" * (width - filled)
+    return f"[{bar}] {percent*100:.1f}%"
+
 def index_existing_files(base_path="/data"):
     """Indexiert alle vorhandenen Dateien beim Start"""
     log(f"🔍 Scanne vorhandene Dateien in {base_path}...")
     log(f"🚫 Ignoriere Ordner: {', '.join(IGNORED_FOLDERS)}")
-    
-    supported_extensions = {".md", ".doc", ".docx", ".pdf", ".txt", ".odt", ".rtf", 
-                           ".mp3", ".wav", ".flac", ".m4a"}
-    
-    file_count = 0
-    skipped_count = 0
-    
-    for root, dirs, files in os.walk(base_path):
-        # Filtere ignorierte Ordner aus (verhindert os.walk sie zu besuchen)
-        dirs[:] = [d for d in dirs if d not in IGNORED_FOLDERS and not d.startswith('.')]
-        
-        for file in files:
-            if Path(file).suffix.lower() in supported_extensions:
-                file_path = os.path.join(root, file)
-                
-                if should_ignore_path(file_path):
-                    skipped_count += 1
-                    continue
-                
-                file_count += 1
-                
-                if file_count % 10 == 0:
-                    log(f"📊 Fortschritt: {file_count} Dateien verarbeitet, {skipped_count} übersprungen...")
-                
-                index_document(file_path)
-    
-    log(f"✅ Fertig! {file_count} Dateien verarbeitet, {skipped_count} übersprungen!")
+
+    # Erst alle Dateien sammeln
+    files_to_index = collect_files(base_path)
+    total_files = len(files_to_index)
+
+    if total_files == 0:
+        log("ℹ️  Keine Dateien zum Indexieren gefunden.")
+        return
+
+    log(f"📁 {total_files} Dateien gefunden, starte Indexierung...")
+
+    indexed_count = 0
+    error_count = 0
+
+    for i, file_path in enumerate(files_to_index, 1):
+        try:
+            index_document(file_path)
+            indexed_count += 1
+        except Exception as e:
+            error_count += 1
+            log(f"❌ Fehler bei {file_path}: {e}")
+
+        # Fortschritt alle 10 Dateien oder bei der letzten
+        if i % 10 == 0 or i == total_files:
+            bar = progress_bar(i, total_files)
+            log(f"📊 {bar} ({i}/{total_files})")
+
+    log(f"✅ Indexierung abgeschlossen!")
+    log(f"   📄 {indexed_count} indexiert, ❌ {error_count} Fehler, 📁 {total_files} gesamt")
 
 def delete_document(file_path):
     """Löscht ein Dokument aus dem Index"""
