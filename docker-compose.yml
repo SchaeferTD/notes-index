@@ -41,6 +41,17 @@ services:
     networks:
       - meilisearch-network
 
+  web:
+    image: nginx:alpine
+    container_name: search-ui
+    restart: unless-stopped
+    volumes:
+      - ./web:/usr/share/nginx/html:ro
+    ports:
+      - "0.0.0.0:8080:80"
+    networks:
+      - meilisearch-network
+
 networks:
   meilisearch-network:
     driver: bridge
