@@ -46,6 +46,29 @@
       border-color: #4a9eff;
     }
 
+    .search-spinner {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      border: 2px solid #3a3a3a;
+      border-top-color: #4a9eff;
+      border-radius: 50%;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .search-spinner.active {
+      opacity: 1;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: translateY(-50%) rotate(360deg); }
+    }
+
     .search-input::placeholder {
       color: #888;
     }
@@ -418,6 +441,7 @@
         placeholder="Suchen..."
         autofocus
       >
+      <div class="search-spinner" id="searchSpinner"></div>
     </div>
     <div class="stats" id="stats"></div>
     <div class="results" id="results"></div>
@@ -472,6 +496,7 @@
     const modalTitle = document.getElementById('modalTitle');
     const modalType = document.getElementById('modalType');
     const modalClose = document.getElementById('modalClose');
+    const searchSpinner = document.getElementById('searchSpinner');
 
     let currentHits = [];
     let debounceTimer;
@@ -577,8 +602,11 @@
         resultsContainer.innerHTML = '';
         statsContainer.textContent = '';
         currentHits = [];
+        searchSpinner.classList.remove('active');
         return;
       }
+
+      searchSpinner.classList.add('active');
 
       try {
         const results = await index.search(query, {
@@ -595,6 +623,8 @@
       } catch (error) {
         console.error('Suchfehler:', error);
         resultsContainer.innerHTML = `<div class="no-results">Fehler: ${escapeHtml(error.message)}</div>`;
+      } finally {
+        searchSpinner.classList.remove('active');
       }
     }
 
