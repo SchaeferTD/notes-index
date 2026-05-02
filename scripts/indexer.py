@@ -141,7 +141,7 @@ def index_document(file_path):
                 log(f"❌ Fehler bei Tika für {file_path}: {e}")
                 return
         
-        elif ext in ["mp3", "wav", "flac", "m4a"]:
+        elif ext in ["xxx"]: #["mp3", "wav", "flac", "m4a"]:
             log(f"🎵 Verarbeite Audio ({file_size} bytes): {file_path}")
             try:
                 meta = subprocess.check_output(
