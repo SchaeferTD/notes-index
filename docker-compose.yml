@@ -35,6 +35,7 @@ services:
     volumes:
       - ${MD_FILES}:/data/md_files
       - ${AUDIO_FILES}:/data/audio_files
+      - ./logs:/app/logs
     depends_on:
       - meilisearch
       - tika

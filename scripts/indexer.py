@@ -4,10 +4,23 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from datetime import datetime
 
+LOG_DIR = Path.cwd() / "logs"
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+def current_log_path():
+    return LOG_DIR / f"{datetime.now().strftime('%Y-%m-%d')}.log"
+
+
 def log(message):
     """Logging mit Timestamp"""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(f"[{timestamp}] {message}", flush=True)
+    text = f"[{timestamp}] {message}"
+    print(text, flush=True)
+    try:
+        with current_log_path().open("a", encoding="utf-8") as f:
+            f.write(text + "\n")
+    except Exception:
+        pass
 
 MEILI_URL = os.environ["MEILI_URL"]
 API_KEY = os.environ["MEILI_API_KEY"]

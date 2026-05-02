@@ -3,4 +3,5 @@ RUN apt update && apt install -y exiftool
 WORKDIR /app
 COPY indexer.py .
 RUN pip install watchdog requests
+RUN mkdir -p /app/logs
 CMD ["python", "indexer.py"]
